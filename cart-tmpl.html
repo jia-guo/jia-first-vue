@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>shopping cart</title>
+    <style>
+      .active {
+        background-color: #ddd;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="vue.js"></script>
+    <script>
+      const app = new Vue({
+        el: "#app",
+        data() {
+          return {
+            title: "Shopping Cart",
+            // fruits: ["apple", "banana", "orange"],
+            fruits: [],
+            newFruit: "",
+            selectedFruit: "",
+          };
+        },
+        methods: {
+          addFruit() {
+            this.fruits.push(this.newFruit);
+            this.newFruit = "";
+          },
+          deleteFruit(i) {
+            this.fruits.splice(i, 1);
+          },
+          getCount() {
+            return this.fruits.length;
+          },
+        },
+        render() {
+          with (this) {
+            return _c(
+              "div",
+              {
+                attrs: {
+                  id: "app",
+                },
+              },
+              [
+                _c(
+                  "h2",
+                  {
+                    attrs: {
+                      title: title,
+                    },
+                  },
+                  [_v(_s(title) + " " + _s(getCount()))]
+                ),
+                _v(" "),
+                _c("p", [
+                  _c("input", {
+                    directives: [
+                      {
+                        name: "model",
+                        rawName: "v-model",
+                        value: newFruit,
+                        expression: "newFruit",
+                      },
+                    ],
+                    attrs: {
+                      type: "text",
+                    },
+                    domProps: {
+                      value: newFruit,
+                    },
+                    on: {
+                      keydown: function ($event) {
+                        if (
+                          !$event.type.indexOf("key") &&
+                          _k($event.keyCode, "enter", 13, $event.key, "Enter")
+                        )
+                          return null;
+                        return addFruit($event);
+                      },
+                      input: function ($event) {
+                        if ($event.target.composing) return;
+                        newFruit = $event.target.value;
+                      },
+                    },
+                  }),
+                  _v(" "),
+                  _c(
+                    "button",
+                    {
+                      on: {
+                        click: addFruit,
+                      },
+                    },
+                    [_v("Add to cart")]
+                  ),
+                ]),
+                _v(" "),
+                fruits.length == 0
+                  ? _c("p", [_v("Your shopping cart is empty")])
+                  : _c(
+                      "div",
+                      _l(fruits, function (f, i) {
+                        return _c(
+                          "div",
+                          {
+                            key: f,
+                            class: {
+                              active: selectedFruit === f,
+                            },
+                            on: {
+                              click: function ($event) {
+                                selectedFruit = f;
+                              },
+                            },
+                          },
+                          [
+                            _v("\n          " + _s(f) + "\n          "),
+                            _c(
+                              "span",
+                              {
+                                on: {
+                                  click: function ($event) {
+                                    return deleteFruit(i);
+                                  },
+                                },
+                              },
+                              [_v("X")]
+                            ),
+                          ]
+                        );
+                      }),
+                      0
+                    ),
+              ]
+            );
+          }
+        },
+      });
+    </script>
+  </body>
+</html>

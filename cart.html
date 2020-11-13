@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>shopping cart</title>
+    <style>
+      .active {
+        background-color: #ddd;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h2 :title="title">{{title}} {{getCount()}}</h2>
+      <p>
+        <input v-model="newFruit" type="text" v-on:keydown.enter="addFruit" />
+        <button @click="addFruit">Add to cart</button>
+      </p>
+      <p v-if="fruits.length == 0">Your shopping cart is empty</p>
+      <div v-else>
+        <!-- :style="{backgroundColor: selectedFruit === f ? '#ddd' : 'transparent'}" -->
+        <div
+          v-for="(f, i) in fruits"
+          :key="f"
+          :class="{active: selectedFruit === f}"
+          @click="selectedFruit = f"
+        >
+          {{ f }}
+          <span @click="deleteFruit(i)">X</span>
+        </div>
+      </div>
+    </div>
+    <script src="vue.js"></script>
+    <script>
+      const app = new Vue({
+        el: "#app",
+        data() {
+          return {
+            title: "Shopping Cart",
+            // fruits: ["apple", "banana", "orange"],
+            fruits: [],
+            newFruit: "",
+            selectedFruit: "",
+          };
+        },
+        methods: {
+          addFruit() {
+            this.fruits.push(this.newFruit);
+            this.newFruit = "";
+          },
+          deleteFruit(i) {
+            this.fruits.splice(i, 1);
+          },
+          getCount() {
+            return this.fruits.length;
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
