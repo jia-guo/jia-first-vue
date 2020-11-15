@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>shopping cart</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
     <style>
       .active {
         background-color: #ddd;
@@ -23,6 +27,19 @@
       }
       .message-box-close {
         float: right;
+      }
+
+      /* animation-1 */
+      .fade-enter,
+      .fade-leave-to {
+        opacity: 0;
+      }
+      .fade-enter-active,
+      .fade-leave-active {
+        transition: opacity 2s;
+      }
+      .fade-enter-to {
+        opacity: 1;
       }
     </style>
   </head>
@@ -45,9 +62,10 @@
         <template>Please check the input!</template>
       </message>
 
-      <h2 :title="title">{{title}}</h2>
+      <!-- <h2 :title="title">{{title}}</h2> -->
+      <heading :level="2" :title="title">{{title}}</heading>
 
-      <div class="tool-bar">
+      <div class="tool-bar" v-permission="'admin'">
         <button @click="$bus.$emit('message-close')">Remove messages</button>
       </div>
 
@@ -73,15 +91,57 @@
     <script>
       Vue.prototype.$bus = new Vue();
 
+      // mixin
+      const greetingMixin = {
+        created() {
+          this.hello();
+        },
+        methods: {
+          hello() {
+            console.log("Greeting from mixin!");
+          },
+        },
+      };
+
+      // render fn
+      Vue.component("heading", {
+        props: ["level", "title"],
+        render(h) {
+          return h(`h${this.level}`, { attrs: { title: this.title } }, this.$slots.default);
+        },
+      });
+
+      // custom binding
+      const role = "admin";
+      Vue.directive("permission", {
+        inserted(el, binding) {
+          if (role !== binding.value) {
+            el.parentElement.removeChild(el);
+          }
+        },
+      });
+
+      // global filter
+      // Vue.filter("currency", function (value) {
+      //   return value;
+      // });
+
       Vue.component("message", {
         props: ["show"],
+        mixins: [greetingMixin],
         template: `
-          <div class="message-box" v-if="show">
-            <slot name="title">Default title</slot>
-            <slot></slot>
-            <slot name="footer" title="from my scope"></slot>
-            <span class="message-box-close" @click="$emit('update:show', false)">X</span>
-          </div>
+          <!-- <transition name="fade"> -->
+          <transition 
+            enter-active-class="animate__animated animate__bounceIn"
+            leave-active-class="animate__animated animate__bounceOut"
+          >
+            <div class="message-box" v-if="show">
+              <slot name="title">Default title</slot>
+              <slot></slot>
+              <slot name="footer" title="from my scope"></slot>
+              <span class="message-box-close" @click="$emit('update:show', false)">X</span>
+            </div>
+          </transition>
         `,
         mounted() {
           this.$bus.$on("message-close", () => {
@@ -111,18 +171,25 @@
           <div>
             <p v-if="fruits.length == 0">Your shopping cart is empty</p>
             <div v-else>
-              <div
-                v-for="(f, i) in fruits"
-                :key="i"
-                :class="{active: selectedFruit === f.name}"
-                @click="selectedFruit = f.name"
-              >
-                {{ f.name }} - {{ f.price }}
-                <span @click="deleteItem(i)">X</span>
-              </div>
+              <transition-group name="fade">
+                <div
+                  v-for="(f, i) in fruits"
+                  :key="f.name"
+                  :class="{active: selectedFruit === f.name}"
+                  @click="selectedFruit = f.name"
+                >
+                  {{ f.name }} - {{ f.price | currency('RMB') }}
+                  <span @click="deleteItem(i)">X</span>
+                </div>
+              </transition-group>
             </div>
           </div>
         `,
+        filters: {
+          currency(value, symbol = "$") {
+            return `${symbol}${value}`;
+          },
+        },
       });
 
       Vue.component("fruit-add", {
@@ -184,7 +251,7 @@
               this.showWarning = true;
               return;
             }
-            this.fruits.push({ name: this.newFruit });
+            this.fruits.push({ name: this.newFruit, price: this.price });
             this.newFruit = "";
 
             this.showSuccess = true;
